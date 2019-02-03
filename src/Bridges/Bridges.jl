@@ -47,6 +47,8 @@ function full_bridge_optimizer(model::MOI.ModelLike, ::Type{T}) where T
     add_bridge(bridgedmodel, MOIB.VectorizeBridge{T})
     add_bridge(bridgedmodel, MOIB.ScalarSlackBridge{T})
     add_bridge(bridgedmodel, MOIB.VectorSlackBridge{T})
+    # add_bridge(bridgedmodel, MOIB.SingleVariableBridge{T})
+    # add_bridge(bridgedmodel, MOIB.VectorOfVariablesBridge{T})
     add_bridge(bridgedmodel, MOIB.SplitIntervalBridge{T})
     add_bridge(bridgedmodel, MOIB.QuadtoSOCBridge{T})
     add_bridge(bridgedmodel, MOIB.GeoMeanBridge{T})
@@ -70,6 +72,16 @@ include("slackbridge.jl")
     MOI.RootDetConeTriangle),
     (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2), (), (), (),
     (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction)
+    )
+include("unslackbridge.jl")
+@bridge SingleVariableB SingleVariableBridge () (MOI.Interval, MOI.LessThan, MOI.GreaterThan) () () (MOI.SingleVariable,) () () ()
+@bridge(VectorOfVariablesB, VectorOfVariablesBridge,  (), (),
+    (MOI.Nonnegatives, MOI.Nonpositives, MOI.SecondOrderCone,
+    MOI.RotatedSecondOrderCone, MOI.GeometricMeanCone,
+    MOI.PositiveSemidefiniteConeSquare, MOI.PositiveSemidefiniteConeTriangle, MOI.LogDetConeTriangle,
+    MOI.RootDetConeTriangle),
+    (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2), (), (),
+    (MOI.VectorOfVariables,), ()
     )
 include("intervalbridge.jl")
 @bridge SplitInterval SplitIntervalBridge () (MOI.Interval,) () () (MOI.SingleVariable,) (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction) () ()
