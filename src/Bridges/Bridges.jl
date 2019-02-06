@@ -45,6 +45,7 @@ function full_bridge_optimizer(model::MOI.ModelLike, ::Type{T}) where T
     cache = MOIU.UniversalFallback(AllBridgedConstraints{T}())
     bridgedmodel = MOIB.LazyBridgeOptimizer(model, cache)
     add_bridge(bridgedmodel, MOIB.VectorizeBridge{T})
+    add_bridge(bridgedmodel, MOIB.ScalarizeBridge{T})
     add_bridge(bridgedmodel, MOIB.ScalarSlackBridge{T})
     add_bridge(bridgedmodel, MOIB.VectorSlackBridge{T})
     add_bridge(bridgedmodel, MOIB.SplitIntervalBridge{T})
@@ -61,6 +62,8 @@ end
 
 include("vectorizebridge.jl")
 @bridge Vectorize VectorizeBridge () (MOI.EqualTo, MOI.LessThan, MOI.GreaterThan,) () () (MOI.SingleVariable,) (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction) () ()
+include("scalarizebridge.jl")
+@bridge Scalarize ScalarizeBridge () () (MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives) () () () (MOI.VectorOfVariables,) (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction)
 include("slackbridge.jl")
 @bridge ScalarSlack ScalarSlackBridge () (MOI.Interval, MOI.LessThan, MOI.GreaterThan) () () () (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction) () ()
 @bridge(VectorSlack, VectorSlackBridge,  (), (),
