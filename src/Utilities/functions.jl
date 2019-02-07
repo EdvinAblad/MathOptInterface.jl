@@ -1297,12 +1297,12 @@ function operate(::typeof(vcat), ::Type{T},
     return VAF(terms, constant)
 end
 
-function scalarize(f::MOI.VectorOfVariables)
+function scalarize(f::MOI.VectorOfVariables, ignore_constants::Bool = false)
     MOI.SingleVariable.(f.variables)
 end
-function scalarize(f::MOI.VectorAffineFunction)
+function scalarize(f::MOI.VectorAffineFunction{T}, ignore_constants::Bool = false) where T
     dimension = MOI.output_dimension(f)
-    constants = MOI._constant(f)
+    constants = ignore_constants ? zeros(T, dimension) : MOI._constant(f)
     counting = count_terms(dimension, f.terms)
     functions = MOI.ScalarAffineFunction.(MOI.ScalarAffineTerm{T}[], constants)
     for i in 1:dimension
@@ -1313,9 +1313,9 @@ function scalarize(f::MOI.VectorAffineFunction)
     end
     functions 
 end
-function scalarize(f::MOI.VectorQuadraticFunction)
+function scalarize(f::MOI.VectorQuadraticFunction{T}, ignore_constants::Bool = false) where T
     dimension = MOI.output_dimension(f)
-    constants = MOI._constant(f)
+    constants = ignore_constants ? zeros(T, dimension) : MOI._constant(f)
     counting_scalars = count_terms(dimension, f.affine_terms)
     counting_quadratics = count_terms(dimension, f.quadratic_terms)
     functions = MOI.ScalarQuadraticFunction.(
